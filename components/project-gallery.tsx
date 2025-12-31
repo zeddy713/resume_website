@@ -13,11 +13,29 @@ interface ProjectGalleryProps {
   locale: "en" | "zh";
 }
 
+interface LocalizedProject {
+  id: string;
+  title: string;
+  role: string;
+  period: string;
+  location?: string;
+  tags: string[];
+  problem: string;
+  dataset: string;
+  approach: string;
+  tools: string[];
+  impact: string[];
+  nextSteps?: string;
+  githubUrl?: string;
+  liveUrl?: string;
+  caseStudyUrl?: string;
+}
+
 export function ProjectGallery({ projects, locale }: ProjectGalleryProps) {
   const { t } = useLocale();
   
   // Transform projects to use locale-specific content
-  const localizedProjects = projects.map((project) => ({
+  const localizedProjects: LocalizedProject[] = projects.map((project) => ({
     ...project,
     title: typeof project.title === "string" ? project.title : project.title[locale],
     role: typeof project.role === "string" ? project.role : project.role[locale],
@@ -29,7 +47,7 @@ export function ProjectGallery({ projects, locale }: ProjectGalleryProps) {
   }));
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
-  const [selectedProject, setSelectedProject] = useState<Project | null>(null);
+  const [selectedProject, setSelectedProject] = useState<LocalizedProject | null>(null);
 
   // Get all unique tags
   const allTags = useMemo(() => {

@@ -6,22 +6,31 @@ import { Project } from "@/src/content/profile";
 import { useLocale } from "@/src/i18n/locale-context";
 import { cn } from "@/lib/utils";
 
+interface LocalizedProject {
+  id: string;
+  title: string;
+  role: string;
+  period: string;
+  location?: string;
+  tags: string[];
+  problem: string;
+  dataset: string;
+  approach: string;
+  tools: string[];
+  impact: string[];
+  nextSteps?: string;
+  githubUrl?: string;
+  liveUrl?: string;
+  caseStudyUrl?: string;
+}
+
 interface ProjectDetailModalProps {
-  project: Project;
+  project: LocalizedProject;
   onClose: () => void;
 }
 
 export function ProjectDetailModal({ project, onClose }: ProjectDetailModalProps) {
-  const { t, locale } = useLocale();
-  
-  // Get localized content
-  const title = typeof project.title === "string" ? project.title : project.title[locale];
-  const role = typeof project.role === "string" ? project.role : project.role[locale];
-  const problem = typeof project.problem === "string" ? project.problem : project.problem[locale];
-  const dataset = typeof project.dataset === "string" ? project.dataset : project.dataset[locale];
-  const approach = typeof project.approach === "string" ? project.approach : project.approach[locale];
-  const impact = typeof project.impact === "object" && !Array.isArray(project.impact) ? project.impact[locale] : project.impact;
-  const nextSteps = project.nextSteps ? (typeof project.nextSteps === "string" ? project.nextSteps : project.nextSteps[locale]) : undefined;
+  const { t } = useLocale();
   
   return (
     <AnimatePresence>
@@ -47,9 +56,9 @@ export function ProjectDetailModal({ project, onClose }: ProjectDetailModalProps
           <div className="p-6 sm:p-8 space-y-6">
             {/* Header */}
             <div>
-              <h2 className="text-3xl font-bold text-foreground mb-2">{title}</h2>
+              <h2 className="text-3xl font-bold text-foreground mb-2">{project.title}</h2>
               <p className="text-muted-foreground">
-                {role} • {project.period}
+                {project.role} • {project.period}
                 {project.location && ` • ${project.location}`}
               </p>
               <div className="flex flex-wrap gap-2 mt-4">
@@ -67,19 +76,19 @@ export function ProjectDetailModal({ project, onClose }: ProjectDetailModalProps
             {/* Problem */}
             <div>
               <h3 className="text-lg font-semibold text-foreground mb-2">{t("projects.problem")}</h3>
-              <p className="text-foreground">{problem}</p>
+              <p className="text-foreground">{project.problem}</p>
             </div>
 
             {/* Dataset */}
             <div>
               <h3 className="text-lg font-semibold text-foreground mb-2">{t("projects.dataset")}</h3>
-              <p className="text-foreground">{dataset}</p>
+              <p className="text-foreground">{project.dataset}</p>
             </div>
 
             {/* Approach */}
             <div>
               <h3 className="text-lg font-semibold text-foreground mb-2">{t("projects.approach")}</h3>
-              <p className="text-foreground">{approach}</p>
+              <p className="text-foreground">{project.approach}</p>
             </div>
 
             {/* Tools */}
@@ -101,7 +110,7 @@ export function ProjectDetailModal({ project, onClose }: ProjectDetailModalProps
             <div>
               <h3 className="text-lg font-semibold text-foreground mb-2">{t("projects.impact")}</h3>
               <ul className="space-y-2">
-                {impact.map((item, index) => (
+                {project.impact.map((item, index) => (
                   <li key={index} className="flex items-start gap-2 text-foreground">
                     <span className="text-accent mt-1">•</span>
                     <span>{item}</span>
@@ -111,10 +120,10 @@ export function ProjectDetailModal({ project, onClose }: ProjectDetailModalProps
             </div>
 
             {/* Next Steps */}
-            {nextSteps && (
+            {project.nextSteps && (
               <div>
                 <h3 className="text-lg font-semibold text-foreground mb-2">{t("projects.nextSteps")}</h3>
-                <p className="text-foreground">{nextSteps}</p>
+                <p className="text-foreground">{project.nextSteps}</p>
               </div>
             )}
 
