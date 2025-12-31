@@ -1,65 +1,104 @@
-import Image from "next/image";
+"use client";
+
+import { useState } from "react";
+import { Navbar } from "@/components/navbar";
+import { Hero } from "@/components/hero";
+import { Section } from "@/components/section";
+import { Timeline } from "@/components/timeline";
+import { ProjectGallery } from "@/components/project-gallery";
+import { SkillMatrix } from "@/components/skill-matrix";
+import { ContactForm } from "@/components/contact-form";
+import { Footer } from "@/components/footer";
+import { ToastContainer } from "@/components/toast";
+import { profile } from "@/src/content/profile";
+import { profileI18n } from "@/src/content/profile-i18n";
+import { useLocale } from "@/src/i18n/locale-context";
+
+interface Toast {
+  id: string;
+  message: string;
+  type: "success" | "error";
+}
 
 export default function Home() {
+  const { locale, t } = useLocale();
+  const i18nContent = profileI18n[locale];
+  const [toasts, setToasts] = useState<Toast[]>([]);
+
+  const addToast = (message: string, type: "success" | "error") => {
+    const id = Math.random().toString(36).substring(7);
+    setToasts((prev) => [...prev, { id, message, type }]);
+  };
+
+  const removeToast = (id: string) => {
+    setToasts((prev) => prev.filter((toast) => toast.id !== id));
+  };
+
+  // Transform education data for Timeline
+  const educationItems = profile.education.map((edu) => ({
+    title: edu.institution,
+    subtitle: typeof edu.degree === "string" ? edu.degree : edu.degree[locale],
+    location: edu.location,
+    period: edu.period,
+    gpa: edu.gpa,
+    courses: edu.courses ? (typeof edu.courses === "object" && !Array.isArray(edu.courses) ? edu.courses[locale] : edu.courses) : undefined,
+    achievements: edu.achievements ? (typeof edu.achievements === "object" && !Array.isArray(edu.achievements) ? edu.achievements[locale] : edu.achievements) : undefined,
+    type: "education" as const,
+  }));
+
+  // Transform experience data for Timeline
+  const experienceItems = profile.experience.map((exp) => ({
+    title: exp.company,
+    subtitle: typeof exp.role === "string" ? exp.role : exp.role[locale],
+    location: exp.location,
+    period: exp.period,
+    details: typeof exp.bullets === "object" && !Array.isArray(exp.bullets) ? exp.bullets[locale] : exp.bullets,
+    type: "experience" as const,
+  }));
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
+    <main className="min-h-screen bg-background text-foreground">
+      <Navbar />
+      <Hero onCopyEmail={() => addToast(t("contact.emailCopied"), "success")} />
+      
+      <Section id="about" title={t("sections.about")}>
+        <div className="prose prose-lg dark:prose-invert max-w-none">
+          <p className="text-foreground whitespace-pre-line leading-relaxed">
+            {i18nContent.about || profile.about}
           </p>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+      </Section>
+
+      <Section id="education" title={t("sections.education")}>
+        <Timeline items={educationItems} />
+      </Section>
+
+      <Section id="experience" title={t("sections.experience")}>
+        <Timeline items={experienceItems} />
+      </Section>
+
+      <Section id="projects" title={t("sections.projects")}>
+        <ProjectGallery projects={profile.projects} locale={locale} />
+      </Section>
+
+      <Section id="skills" title={t("sections.skills")}>
+        <SkillMatrix skills={profile.skills} />
+      </Section>
+
+      <Section id="contact" title={t("sections.contact")}>
+        <div className="max-w-2xl mx-auto">
+          <p className="text-muted-foreground mb-6 text-center">
+            {t("contact.subtitle")}
+          </p>
+          <ContactForm
+            onSuccess={(message) => addToast(message, "success")}
+            onError={(message) => addToast(message, "error")}
+          />
         </div>
-      </main>
-    </div>
+      </Section>
+
+      <Footer />
+      <ToastContainer toasts={toasts} onRemove={removeToast} />
+    </main>
   );
 }
